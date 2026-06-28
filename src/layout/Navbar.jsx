@@ -1,0 +1,123 @@
+import { Button } from "@/components/Button";
+import { Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+const navLinks = [
+  { href: "about", label: "About" },
+  { href: "projects", label: "Projects" },
+  { href: "experience", label: "Experience" },
+  { href: "testimonials", label: "Testimonials" },
+];
+
+export const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleNavClick = (id) => {
+    setIsMobileMenuOpen(false);
+
+    const scrollToSection = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+
+    // If not on homepage → go home first
+    if (location.pathname !== "/") {
+      navigate("/");
+
+      // wait for page render then scroll
+      setTimeout(() => {
+        scrollToSection();
+      }, 150);
+    } else {
+      scrollToSection();
+    }
+  };
+
+  return (
+    <header
+      className={`fixed top-0 left-0 right-0 transition-all duration-500 ${
+        isScrolled ? "glass-strong py-3" : "bg-transparent py-5"
+      } z-50`}
+    >
+      <nav className="container mx-auto px-6 flex items-center justify-between">
+        
+        {/* Logo */}
+        <a
+          href="/"
+          className="text-xl font-bold tracking-tight hover:text-primary"
+        >
+          PM<span className="text-primary">.</span>
+        </a>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-1">
+          <div className="glass rounded-full px-2 py-1 flex items-center gap-1">
+            {navLinks.map((link, index) => (
+              <button
+                key={index}
+                onClick={() => handleNavClick(link.href)}
+                className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground rounded-full hover:bg-surface"
+              >
+                {link.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Desktop */}
+        <div className="hidden md:block">
+          <button onClick={() => handleNavClick("contact")}>
+            <Button size="sm">Contact Me</Button>
+          </button>
+        </div>
+
+        {/* Mobile Button */}
+        <button
+          className="md:hidden p-2 text-foreground cursor-pointer"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </nav>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden glass-strong animate-fade-in">
+          <div className="container mx-auto px-6 py-6 flex flex-col gap-4">
+
+            {navLinks.map((link, index) => (
+              <button
+                key={index}
+                onClick={() => handleNavClick(link.href)}
+                className="text-left text-lg text-muted-foreground hover:text-foreground py-2"
+              >
+                {link.label}
+              </button>
+            ))}
+
+            <button onClick={() => handleNavClick("contact")}>
+              <Button>Contact Me</Button>
+            </button>
+
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
